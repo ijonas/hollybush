@@ -1,0 +1,5 @@
+*.gem
+.bundle
+Gemfile.lock
+pkg/*
+ruby-1.9.2-p180/
