@@ -2,35 +2,64 @@ module Hollybush
   
   class List
     include Enumerable
-    attr_accessor :id, :name
+    include ActiveModel::Validations
+    include ActiveModel::Conversion
+    extend ActiveModel::Naming
     
-    def initialize(options = {})
-      @name = options[:name] if options.include?(:name)
-      @id = options[:id] if options.include?(:id)      
-      @coll = $mongodb.collection(:list)
+    attr_accessor :id, :name, :entries
+    validates_presence_of :name
+    
+    def initialize(attributes = {})
+      attributes.each do |name, value|
+        send("#{name}=", value) if respond_to?(name)
+      end
+      @entries = [] unless @entries      
+      @id = attributes["_id"].to_s if attributes.include?("_id")
     end
     
     def save
-      @id = @coll.save({:name => @name})
+      update_doc = {:name => @name, :entries => @entries}
+      if @id
+        List.coll.update({"_id" => make_id(@id)}, update_doc)
+      else
+        @id = List.coll.save(update_doc).to_s
+      end
     end
     
     def each(&a_block)
-      doc = @coll.find_one({"_id" => @id})
+      doc = List.coll.find_one({"_id" => @id})
       doc["entries"].each(&a_block) if doc["entries"] 
     end
     
     def <<(entry)
-      save unless @id
-      @coll.update({"_id" => @id}, {"$push" => {:entries => entry}})
+      save unless persisted?
+      @entries << entry if List.coll.update({"_id" => make_id(@id)}, {"$push" => {:entries => entry}})
     end
     
     def delete(entry)
-      @coll.update({"_id" => @id}, {"$pull" => {:entries => entry}})
+      @entries.delete(entry) if List.coll.update({"_id" => make_id(@id)}, {"$pull" => {:entries => entry}})
     end
     
-    def self.find(query = {})
-      $mongodb.collection(:list).find(query).to_a.map { |doc| List.new(doc) }
+    def persisted?
+      @id != nil
     end
+    
+    def self.find(query = {}, options = {})
+      query["_id"] = BSON::ObjectId.from_string(query["_id"]) if query.include?("_id")
+      coll.find(query, options).to_a.map {|doc| Hollybush::List.new(doc)}
+    end
+  
+    private 
+    def make_id(id)
+      BSON::ObjectId.from_string(id)
+    end
+    
+    def self.coll
+      $mongodb.collection(:list)
+    end
+    
   end  
+  
+  
   
 end
