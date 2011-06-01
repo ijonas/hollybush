@@ -17,9 +17,7 @@ module Hollybush
       it "should have a name" do
         @list.name.should == "My New List"
       end
-      it "should be valid" do
-        @list.should be_valid
-      end      
+      specify {@list.should be_valid}      
       context "when adding items into the list" do
         before(:each) do
           @list << {:description => "Here's an item"}
@@ -39,16 +37,13 @@ module Hollybush
     context "when storing in the DB with invalid details" do
       before(:each) do
         @list = List.new(:name => nil)
-      end
-      it "should not be valid" do
-        @list.should_not be_valid
-      end
-      it "should have an id" do
         @list.save
+      end
+      specify {@list.should_not be_valid}
+      it "should have an id" do
         @list.id.should be_nil
       end
       it "should have an error on 'name'" do
-        @list.save
         @list.errors[:name].should == ["can't be blank"]
       end
     end
@@ -77,6 +72,9 @@ module Hollybush
         it "should leave persisted version of List unaffected" do
           List.find({"id" => @list.id}).first.name.should == "My New List"
         end
+        it "should have an error on 'name'" do
+          @list.errors[:name].should == ["can't be blank"]
+        end        
       end
     end
     
