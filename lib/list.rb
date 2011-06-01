@@ -63,11 +63,19 @@ module Hollybush
     end
     
     def self.delete(query = {})
-      List.coll.remove(prepare(query))
+      begin
+        List.coll.remove(prepare(query))
+      rescue BSON::InvalidObjectId
+      end
     end
     
     def self.find(query = {}, options = {})
-      coll.find(prepare(query), options).to_a.map {|doc| Hollybush::List.new(doc)}
+      begin
+        coll.find(prepare(query), options).to_a.map {|doc| Hollybush::List.new(doc)}
+      rescue BSON::InvalidObjectId => e
+        puts e.message
+        []
+      end
     end
     
     def self.count(query = {})
@@ -84,12 +92,16 @@ module Hollybush
     end
 
     def self.prepare(query)
-      query["_id"] = BSON::ObjectId.from_string(query["_id"]) if query.include?("_id")
-      # we support querying by 'id' when in actual fact the query should be on '_id', so lets correct that
-      if query.include?("id")
-        query["_id"] = BSON::ObjectId.from_string(query["id"])
-        query.delete "id"
+      ids = ["id", "_id", :id, :_id]
+      new_bson_id = nil
+      # we support querying by various incarnations of 'id' when in actual fact the query should be on '_id', so lets correct that
+      ids.map do |id_key|
+        if query.include?(id_key)
+          new_bson_id = BSON::ObjectId.from_string(query[id_key])
+          query.delete id_key
+        end
       end
+      query["_id"] = new_bson_id if new_bson_id
       query
     end
     
