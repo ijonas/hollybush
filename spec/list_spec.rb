@@ -76,6 +76,21 @@ module Hollybush
           @list.errors[:name].should == ["can't be blank"]
         end        
       end
+      context "with an attribute hash" do
+        before(:each) do
+          @list = List.create(:name => "My New List")
+          @attributes = {"name"=>"My Revised Shopping List", "entries" => [{"description"=>"entry 1"},{"description"=>"entry 2"}], "id"=>@list.id, "controller"=>"lists", "action"=>"update"}
+          @list.update_attributes(@attributes)
+          @list.save
+        end
+        specify{ @list.should be_valid }
+        it "should update the persisted version with name and entries" do
+          list = List.find({"id" => @list.id}).first
+          list.name.should == @attributes["name"]
+          list.entries.should =~ @attributes["entries"]
+        end
+      end
+      
     end
     
     context "when retrieving from the DB" do

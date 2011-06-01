@@ -10,9 +10,7 @@ module Hollybush
     validates_presence_of :name
     
     def initialize(attributes = {})
-      attributes.each do |name, value|
-        send("#{name}=", value) if respond_to?(name)
-      end
+      update_attributes(attributes)
       @entries = [] unless @entries      
       @id = attributes["_id"].to_s if attributes.include?("_id")
     end
@@ -25,7 +23,15 @@ module Hollybush
         else
           @id = List.coll.save(update_doc).to_s
         end
+      else
+        false
       end
+    end
+    
+    def self.create(attributes)
+      list = List.new(attributes)
+      list.save
+      list
     end
     
     def each(&a_block)
@@ -44,6 +50,12 @@ module Hollybush
     
     def persisted?
       @id != nil
+    end
+    
+    def update_attributes(attributes = {})
+      attributes.each do |name, value|
+        send("#{name}=", value) if respond_to?(name)
+      end      
     end
     
     def self.find(query = {}, options = {})
