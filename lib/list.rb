@@ -44,7 +44,7 @@ module Hollybush
       @entries << entry if List.coll.update({"_id" => make_id(@id)}, {"$push" => {:entries => entry}})
     end
     
-    def delete(entry)
+    def delete_entry(entry)
       @entries.delete(entry) if List.coll.update({"_id" => make_id(@id)}, {"$pull" => {:entries => entry}})
     end
     
@@ -58,14 +58,20 @@ module Hollybush
       end      
     end
     
+    def delete
+      List.coll.remove({"_id" => make_id(@id)})
+    end
+    
+    def self.delete(query = {})
+      List.coll.remove(prepare(query))
+    end
+    
     def self.find(query = {}, options = {})
-      query["_id"] = BSON::ObjectId.from_string(query["_id"]) if query.include?("_id")
-      # we support querying by 'id' when in actual fact the query should be on '_id', so lets correct that
-      if query.include?("id")
-        query["_id"] = BSON::ObjectId.from_string(query["id"])
-        query.delete "id"
-      end
-      coll.find(query, options).to_a.map {|doc| Hollybush::List.new(doc)}
+      coll.find(prepare(query), options).to_a.map {|doc| Hollybush::List.new(doc)}
+    end
+    
+    def self.count(query = {})
+      coll.find(query, :fields => []).count
     end
   
     private 
@@ -76,6 +82,17 @@ module Hollybush
     def self.coll
       $mongodb.collection(:list)
     end
+
+    def self.prepare(query)
+      query["_id"] = BSON::ObjectId.from_string(query["_id"]) if query.include?("_id")
+      # we support querying by 'id' when in actual fact the query should be on '_id', so lets correct that
+      if query.include?("id")
+        query["_id"] = BSON::ObjectId.from_string(query["id"])
+        query.delete "id"
+      end
+      query
+    end
+    
     
   end  
   

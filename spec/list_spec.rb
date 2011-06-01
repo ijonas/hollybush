@@ -27,7 +27,7 @@ module Hollybush
         
         context "when deleting items from the list" do
           before(:each) do
-            @list.delete({:description => "Here's an item"})
+            @list.delete_entry({:description => "Here's an item"})
           end
           specify { @list.should have(1).entries }
         end
@@ -104,6 +104,28 @@ module Hollybush
       end
       it "should retrieve specific lists by specifying some parameters" do
         List.find("_id" => @id).first.id.should == @list.id
+      end
+    end
+    
+    context "when deleting Lists" do
+      before(:each) do
+        @list1 = List.create(:name => "My first list")
+        @list2 = List.create(:name => "My second list")
+      end
+      context "deleting a single list" do
+        it "should reduce the List count by 1" do
+          expect { @list1.delete }.to change(List, :count).by(-1)
+        end
+      end
+      context "deleting Lists based on matching criteria" do
+        it "should reduce the List count by 2" do
+          expect { List.delete({:name => /My/}) }.to change(List, :count).by(-2)
+        end
+      end
+      context "deleting Lists based on non-matching criteria" do
+        it "should not reduce the List count" do
+          expect { List.delete({:name => /You/}) }.to_not change(List, :count)
+        end
       end
     end
     
