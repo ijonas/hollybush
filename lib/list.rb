@@ -18,11 +18,13 @@ module Hollybush
     end
     
     def save
-      update_doc = {:name => @name, :entries => @entries}
-      if @id
-        List.coll.update({"_id" => make_id(@id)}, update_doc)
-      else
-        @id = List.coll.save(update_doc).to_s
+      if valid?
+        update_doc = {:name => @name, :entries => @entries}
+        if @id
+          List.coll.update({"_id" => make_id(@id)}, update_doc)
+        else
+          @id = List.coll.save(update_doc).to_s
+        end
       end
     end
     
@@ -46,6 +48,11 @@ module Hollybush
     
     def self.find(query = {}, options = {})
       query["_id"] = BSON::ObjectId.from_string(query["_id"]) if query.include?("_id")
+      # we support querying by 'id' when in actual fact the query should be on '_id', so lets correct that
+      if query.include?("id")
+        query["_id"] = BSON::ObjectId.from_string(query["id"])
+        query.delete "id"
+      end
       coll.find(query, options).to_a.map {|doc| Hollybush::List.new(doc)}
     end
   
