@@ -1,6 +1,6 @@
 # Hollybush
 
-Hollybush is gem to manage flexible structured lists, using MongoDB as a backing database. Hollybush is 
+Hollybush is a gem to manage flexible structured lists, using MongoDB as a backing database. Hollybush is 
 intended to be used in a variety of scenarios including outlining tools and todo list managers.
 
 ## Copyright
