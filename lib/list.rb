@@ -41,6 +41,7 @@ module Hollybush
     
     def <<(entry)
       save unless persisted?
+      BSON::ObjectId.create_pk(entry)
       @entries << entry if List.coll.update({"_id" => make_id(@id)}, {"$push" => {:entries => entry}})
     end
     
@@ -84,6 +85,10 @@ module Hollybush
   
     private 
     def make_id(id)
+      BSON::ObjectId.from_string(id)
+    end
+
+    def make_random_id
       BSON::ObjectId.from_string(id)
     end
     
