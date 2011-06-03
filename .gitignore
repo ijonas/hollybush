@@ -3,3 +3,4 @@
 Gemfile.lock
 pkg/*
 ruby-1.9.2-p180/
+.DS_Store
