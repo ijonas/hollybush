@@ -46,7 +46,11 @@ module Hollybush
     end
     
     def delete_entry(entry)
-      @entries.delete(entry) if List.coll.update({"_id" => make_id(@id)}, {"$pull" => {:entries => entry}})
+      puts "=============>"
+      require "pp"
+      pp entry
+      puts "=============>"
+      @entries.delete(entry) if List.coll.update({"_id" => make_id(@id)}, {"$pull" => {:entries => {"_id" => entry["_id"]}}})
     end
     
     def persisted?

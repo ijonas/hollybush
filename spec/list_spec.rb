@@ -27,7 +27,7 @@ module Hollybush
         
         context "when deleting items from the list" do
           before(:each) do
-            @list.delete_entry({:description => "Here's an item"})
+            @list.delete_entry(@list.entries.first)
           end
           specify { @list.should have(1).entries }
         end
