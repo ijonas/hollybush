@@ -46,11 +46,11 @@ module Hollybush
     end
     
     def delete_entry(entry)
-      puts "=============>"
-      require "pp"
-      pp entry
-      puts "=============>"
       @entries.delete(entry) if List.coll.update({"_id" => make_id(@id)}, {"$pull" => {:entries => {"_id" => entry["_id"]}}})
+    end
+    
+    def update_entry(entry)
+      List.coll.update({"_id" => make_id(@id), "entries._id" => make_id(entry["_id"])}, {"$set" => {"entries.$"=> entry}})
     end
     
     def persisted?
@@ -73,6 +73,14 @@ module Hollybush
       rescue BSON::InvalidObjectId
       end
     end
+
+    def self.delete_entry(query = {})
+      begin
+        List.coll.remove(prepare(query))
+      rescue BSON::InvalidObjectId
+      end
+    end
+
     
     def self.find(query = {}, options = {})
       begin

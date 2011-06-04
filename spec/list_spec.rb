@@ -31,6 +31,25 @@ module Hollybush
           end
           specify { @list.should have(1).entries }
         end
+        
+        context "when updating an item" do
+          before(:each) do
+            @list << {:description => "Here's an item"}
+            @list << {:description => "Here's another item", :state => "Started"}
+            entry = @list.entries.first
+            entry["description"] = "Here's an updated entry"
+            @list.save
+          end
+          it "should update an existing entry" do
+            List.find(:_id => @list.id).first.entries.first["description"].should == "Here's an updated entry"
+          end
+          it "should not create or remove Lists" do
+            expect { @list.save }.not_to change(List, :count)
+          end
+          it "should not create or remove Entries in the Lists" do
+            expect { @list.save }.not_to change(@list.entries, :count)
+          end
+        end
       end
     end
     
