@@ -50,7 +50,8 @@ module Hollybush
     end
     
     def update_entry(entry)
-      List.coll.update({"_id" => make_id(@id), "entries._id" => make_id(entry["_id"])}, {"$set" => {"entries.$"=> entry}})
+      entry["_id"] = make_id(entry["_id"])
+      List.coll.update({"_id" => make_id(@id), "entries._id" => entry["_id"]}, {"$set" => {"entries.$"=> entry}})
     end
     
     def persisted?
