@@ -3,6 +3,8 @@
 Hollybush is a gem to manage flexible structured lists, using MongoDB as a backing database. Hollybush is 
 intended to be used in a variety of scenarios including outlining tools and todo list managers.
 
+WARNING: This gem is currently under heavy development and subject to a shedload of change. You're best not using it.
+
 ## Copyright
 
 (The MIT License)
