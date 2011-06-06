@@ -106,7 +106,12 @@ module Hollybush
     end
     
     def self.coll
-      $mongodb.collection(:list)
+      begin
+        Hollybush.mongodb.collection(:list)        
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end      
     end
 
     def self.prepare(query)
